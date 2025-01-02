@@ -1,91 +1,128 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch } from "../../store/hooks";
 import { addCoins, removeCoins } from "../../store/features/balance";
+import { shuffle } from "../../utilits/shuffle";
+
 interface Slot {
   img: string;
   id: string;
 }
+type IStatusSpin = "LOSE" | "WIN" | "";
 export const useData = () => {
   const dispatch = useAppDispatch();
-  const [slots, setSlots] = useState<Slot[]>([
-    {
-      id: "train",
-      img: require("../../assets/images/slots/train.png"),
-    },
-    {
-      id: "wagon",
-      img: require("../../assets/images/slots/wagon.png"),
-    },
-    {
-      id: "train",
-      img: require("../../assets/images/slots/train.png"),
-    },
-    {
-      id: "piramida",
-      img: require("../../assets/images/slots/piramida.png"),
-    },
+  const [slots, setSlots] = useState<Slot[]>(() =>
+    shuffle(
+      [
+        { id: "train", img: require("../../assets/images/slots/train.png") },
+        { id: "wagon", img: require("../../assets/images/slots/wagon.png") },
+        {
+          id: "piramida",
+          img: require("../../assets/images/slots/piramida.png"),
+        },
+        { id: "diger", img: require("../../assets/images/slots/diger.png") },
+      ].concat([
+        { id: "train", img: require("../../assets/images/slots/train.png") },
+        { id: "wagon", img: require("../../assets/images/slots/wagon.png") },
+        {
+          id: "piramida",
+          img: require("../../assets/images/slots/piramida.png"),
+        },
+        { id: "diger", img: require("../../assets/images/slots/diger.png") },
+      ])
+    )
+  );
 
-    {
-      id: "diger",
-      img: require("../../assets/images/slots/diger.png"),
-    },
-    {
-      id: "wagon",
-      img: require("../../assets/images/slots/wagon.png"),
-    },
-    {
-      id: "piramida",
-      img: require("../../assets/images/slots/piramida.png"),
-    },
-    {
-      id: "diger",
-      img: require("../../assets/images/slots/diger.png"),
-    },
-  ]);
-  const [selectedSlots, setSelectedSlots] = useState<Slot["id"][]>([]);
+  const [openCards, setOpenCards] = useState<string[]>([]);
+  const [clearedCards, setClearedCards] = useState<Record<string, boolean>>({});
+  const [moves, setMoves] = useState<number>(0);
+  const [statusSpin, setStatusSpin] = useState<IStatusSpin>("");
   const [resetFlips, setResetFlips] = useState<boolean>(false);
-  const [statusSpin, setStatusSpin] = useState<string>("");
-  const onSelectSlot = useCallback(
-    (slotId: Slot["id"]) => {
-      if (selectedSlots.length === 0) setSelectedSlots([slotId]);
-      else {
-        if (
-          !selectedSlots.find((slotID) =>
-            slotID.toLowerCase().includes(slotId.toLowerCase())
-          ) &&
-          selectedSlots.length > 1
-        ) {
-          setTimeout(() => {
-            setStatusSpin("LOSE");
-          }, 500);
 
-          setSelectedSlots([]);
-          dispatch(removeCoins(100));
-        } else {
-          setTimeout(() => {
-            setStatusSpin("WIN");
-          }, 500);
-          dispatch(addCoins(200));
-          // setSelectedSlots([]);
-          setSelectedSlots((prev) => [...prev, slotId]);
-        }
-        setTimeout(() => {
-          setStatusSpin(" ");
-        }, 1000);
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  const evaluate = useCallback(() => {
+    const [first, second, third] = openCards;
+    console.log(
+      "🚀 ~ evaluate ~ openCards:",
+      openCards[moves - 1],
+      openCards[moves],
+      moves
+    );
+
+    if (openCards[moves] === openCards[moves + 1]) {
+      // setClearedCards((prev) => ({ ...prev, [second]: true }));
+      setClearedCards({});
+      setOpenCards([]);
+      dispatch(addCoins(200)); // Додати монети за успішний збіг
+    } else {
+      setStatusSpin("LOSE");
+      dispatch(removeCoins(100)); // Зняти монети за помилку
+    }
+
+    // Очистити відкриті карти після перевірки
+    setOpenCards([]);
+  }, [openCards, dispatch]);
+
+  const onSelectSlot = useCallback(
+    (slotId: string) => {
+      console.log(
+        "🚀 ~ evaluate ~ openCards:",
+        openCards[moves],
+        openCards,
+
+        openCards[moves + 1],
+        moves
+      );
+      // Заборона вибору карт, поки вже відкриті дві
+      if (openCards.length === 2) return;
+
+      // Якщо карта вже відкрито або знайдено пару, блокувати вибір
+      if (clearedCards[slotId] || openCards.includes(slotId)) return;
+
+      if (openCards.length === 1) {
+        // Додати другу карту та збільшити кількість ходів
+        setOpenCards((prev) => [...prev, slotId]);
+        setMoves((prev) => prev + 1);
+      } else {
+        // Очистити попередній таймер та встановити нову карту
+        if (timeout.current) clearTimeout(timeout.current);
+        setOpenCards([slotId]);
       }
     },
-    [selectedSlots]
+    [openCards, clearedCards]
   );
+
+  useEffect(() => {
+    if (openCards.length !== 0 && openCards.length % 2 === 0) {
+      timeout.current = setTimeout(() => {
+        evaluate();
+      }, 500);
+    }
+
+    return () => {
+      if (timeout.current) clearTimeout(timeout.current);
+    };
+  }, [openCards, evaluate]);
+
+  const checkIsFlipped = useCallback(
+    (id: string) => openCards.includes(id),
+    [openCards]
+  );
+
+  const checkIsInactive = useCallback(
+    (slot: Slot) => Boolean(clearedCards[slot.id]),
+    [clearedCards]
+  );
+
   const onPressAgain = useCallback(() => {
     setStatusSpin("");
     setResetFlips(true);
-    setSlots(
-      slots
-        .map((value) => ({ value, sort: Math.random() }))
-        .sort((a, b) => a.sort - b.sort)
-        .map(({ value }) => value)
-    );
+    setSlots((prevSlots) => shuffle(prevSlots));
+    setClearedCards({});
+    setOpenCards([]);
+    setMoves(0);
   }, []);
+
   return {
     slots: [
       ...slots.slice(0, 4),
@@ -96,9 +133,11 @@ export const useData = () => {
       ...slots.slice(4),
     ],
     statusSpin,
+    checkIsFlipped,
+    checkIsInactive,
     onSelectSlot,
-    setResetFlips,
     onPressAgain,
     resetFlips,
+    moves,
   };
 };

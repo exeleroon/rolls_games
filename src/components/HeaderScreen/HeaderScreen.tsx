@@ -105,6 +105,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     width: "100%",
+    alignItems: "flex-start",
     justifyContent: "space-between",
   },
   leftSection: {
@@ -113,7 +114,6 @@ const styles = StyleSheet.create({
   backButton: {
     width: 220,
     height: 100,
-    marginBottom: 10,
   },
   badgeImage: {
     width: 256,
@@ -124,7 +124,8 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   coinContainer: {
-    height: 60,
+    height: 45,
+    marginTop: 12,
     width: 120,
     paddingRight: 20,
     alignItems: "flex-end",

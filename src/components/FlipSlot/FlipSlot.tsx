@@ -12,6 +12,8 @@ interface FlipSlotProps {
   img: string | ImageSourcePropType;
   slotId: string;
   resetFlips: boolean;
+  isFlipped: boolean;
+  isInactive: boolean;
   _index: number;
   onSelectSlot: (slotId: string) => void;
 }
@@ -19,17 +21,21 @@ const FlipSlot: FC<FlipSlotProps> = ({
   img,
   slotId,
   _index,
+  isFlipped,
+  isInactive,
   resetFlips,
   onSelectSlot,
 }) => {
+  console.log("🚀 ~ isInactive:", isInactive);
   const refCard = useRef<Array<CardFlip | null>>([]); // Array of refs
-  console.log(refCard.current[_index]?.state);
   useEffect(() => {
     if (resetFlips)
       refCard.current[_index]?.state.side === 1 &&
         refCard.current[_index]?.flip();
   }, [resetFlips, slotId]);
-
+  const handleClick = (slotId: string) => {
+    !isFlipped && !isInactive && onSelectSlot(slotId);
+  };
   return (
     <CardFlip
       style={styles.cardContainer}
@@ -39,10 +45,8 @@ const FlipSlot: FC<FlipSlotProps> = ({
         activeOpacity={1}
         style={[styles.card, styles.card1]}
         onPress={() => {
-          console.log(refCard.current[_index]?.state);
-
           refCard.current[_index]?.flip(); // Use the index-specific ref
-          onSelectSlot(slotId);
+          handleClick(slotId);
         }}
       >
         <Image
@@ -54,7 +58,9 @@ const FlipSlot: FC<FlipSlotProps> = ({
       <TouchableOpacity
         activeOpacity={1}
         style={[styles.card, styles.card2]}
-        onPress={() => refCard.current[_index]?.flip()}
+        onPress={() =>
+          !isFlipped && !isInactive && refCard.current[_index]?.flip()
+        }
       >
         <Image
           resizeMode="contain"

@@ -17,7 +17,7 @@ const SpinTreasureScreen = () => {
 
   return (
     <ImageBackground
-      style={{ flex: 1 }}
+      style={{ flex: 1, paddingTop: 32 }}
       source={require("../../assets/images/spinBg.png")}
     >
       <HeaderScreen title="spin" visibleGamesBtns />
@@ -25,6 +25,7 @@ const SpinTreasureScreen = () => {
         style={{
           backgroundColor: "##F88B00",
           flex: 1,
+          top: -40,
           flexDirection: "row",
           alignItems: "flex-start",
           justifyContent: "center",

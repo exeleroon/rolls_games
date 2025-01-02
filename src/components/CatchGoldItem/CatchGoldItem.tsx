@@ -2,14 +2,16 @@ import {
   Dimensions,
   Image,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import React, { memo } from "react";
-import Animated, { FadeOut, Layout } from "react-native-reanimated";
+import Animated, {
+  FadeOutRight,
+  LinearTransition,
+} from "react-native-reanimated";
 
-const CatchGoldItem = memo(function GatchGoldItem({
+const CatchGoldItem = memo(function CatchGoldItem({
   item,
   index,
   visibleIndexes,
@@ -19,13 +21,10 @@ const CatchGoldItem = memo(function GatchGoldItem({
   return (
     <Animated.View
       key={item.id}
-      layout={Layout.springify()}
-      exiting={FadeOut}
+      layout={LinearTransition}
+      exiting={FadeOutRight}
       style={[
-        {
-          height: 140,
-          width: 140,
-        },
+        styles.item,
         {
           transform: [
             index % 2 === 0 ? { rotate: "30deg" } : { rotate: "-30deg" },
@@ -34,20 +33,11 @@ const CatchGoldItem = memo(function GatchGoldItem({
       ]}
     >
       <TouchableOpacity
-        onPress={() => setSelectedSlot((prev) => [...prev, item.id])}
+        onPress={() => setSelectedSlot((prev: any) => [...prev, item.id])}
       >
-        {!selectedSlot.find((i) => i === item.id) &&
-        visibleIndexes.find((i) => i === index) ? (
-          <Image
-            resizeMode="contain"
-            style={[
-              {
-                height: 90,
-                width: 90,
-              },
-            ]}
-            source={item.img}
-          />
+        {!selectedSlot.find((i: any) => i === item.id) &&
+        visibleIndexes.find((i: any) => i.id === item.id) ? (
+          <Image resizeMode="contain" style={[styles.img]} source={item.img} />
         ) : (
           <View
             style={{
@@ -60,4 +50,14 @@ const CatchGoldItem = memo(function GatchGoldItem({
   );
 });
 export default CatchGoldItem;
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  item: {
+    height: 140,
+    width: Dimensions.get("window").width / 3 - 20,
+    paddingHorizontal: 24,
+  },
+  img: {
+    height: 140,
+    width: Dimensions.get("window").width / 3 - 40,
+  },
+});

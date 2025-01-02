@@ -1,58 +1,30 @@
 import {
-  Dimensions,
-  Image,
   ImageBackground,
   NativeScrollEvent,
   NativeSyntheticEvent,
   StyleSheet,
-  TouchableOpacity,
+  Text,
   View,
 } from "react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import HeaderScreen from "../../components/HeaderScreen/HeaderScreen";
 import { useData } from "./useData";
-import ButtonBottom from "../../core/ButtonBottom/ButtonBottom";
-import Animated, {
+import {
   Easing,
-  FadeOut,
-  Layout,
   ReduceMotion,
-  useAnimatedProps,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import CatchGoldItem from "../../components/CatchGoldItem/CatchGoldItem";
-const DURATION = 1200; // milliseconds
+import CatchSlot from "../../components/CatchSlot/CatchSlot";
+
 const CatchGoldScreen = () => {
   const { list, setList, selectedSlot, setSelectedSlot } = useData();
-  console.log("🚀 ~ CatchGoldScreen ~ selectedSlot:", list.length);
-  const numbers = Array.from({ length: list.length }, (_, i) => i);
 
-  const [visibleIndexes, setVisibleIndexes] = useState<number[]>([]);
-
-  // Створюємо ефект, щоб змінювати крок відображення між кожним другим і третім елементом
-  useEffect(() => {
-    const randomNumbers: number[] = [];
-    for (let i = 0; i < numbers.length; i += 3) {
-      const group = numbers.slice(i, i + 3);
-      const randomIndex = Math.floor(Math.random() * group.length);
-      randomNumbers.push(group[randomIndex]);
-    }
-    setVisibleIndexes(randomNumbers);
-  }, []); // Викликається при зміні списку
   const offsetY = useSharedValue<number>(0);
-  const animatedProps = useAnimatedProps(() => {
-    return {
-      contentOffset: {
-        x: 0,
-        y: offsetY.value,
-      },
-    };
-  });
 
   const scrollToIndex = useCallback((index: number) => {
     offsetY.value = withTiming(list.length - 1, {
-      duration: 5200,
+      duration: 5000,
       easing: Easing.linear,
       reduceMotion: ReduceMotion.Never,
     });
@@ -60,7 +32,6 @@ const CatchGoldScreen = () => {
 
   const ITEM_HEIGHT = 100;
   const SCREEN_HEIGHT = 500;
-  const [visibleItems, setVisibleItems] = useState([]);
 
   const onScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -77,74 +48,93 @@ const CatchGoldScreen = () => {
   useEffect(() => {
     scrollToIndex(list.length - 1);
   }, []);
+
   return (
     <ImageBackground
-      style={{ flex: 1 }}
+      style={styles.imageBackground}
       source={require("../../assets/images/catchGoldBg.png")}
     >
       <HeaderScreen title="" visibleGamesBtns />
-      <Animated.View style={styles.container}>
-        <Animated.FlatList
-          inverted
-          onScroll={onScroll}
-          animatedProps={animatedProps}
-          contentContainerStyle={{ rowGap: 20 }}
-          showsVerticalScrollIndicator={false}
-          keyExtractor={(item) => item.id}
-          data={list}
-          numColumns={3}
-          renderItem={({ item, index }) => (
-            <CatchGoldItem
-              item={item}
-              index={index}
-              visibleIndexes={visibleIndexes}
-              selectedSlot={selectedSlot}
-              setSelectedSlot={setSelectedSlot}
-            />
-          )}
+      <View style={styles.slotContainer}>
+        <CatchSlot
+          slots={list}
+          isScroll={true}
+          position={list.length - 1}
+          visibleIndexes={2}
+          selectedSlot={selectedSlot}
+          setSelectedSlot={setSelectedSlot}
         />
-      </Animated.View>
-      <ButtonBottom
-        label="START"
-        onPress={() => {
-          // offsetY.value = withTiming(0, {
-          //   duration: 100,
-          //   easing: Easing.back(),
-          //   reduceMotion: ReduceMotion.Never,
-          // });
-          // setTimeout(() => {
-          //   offsetY.value = withTiming(list.length * 14, {
-          //     duration: 50000,
-          //     easing: Easing.linear,
-          //     reduceMotion: ReduceMotion.Never,
-          //   });
-          // }, 500);
-        }}
-      />
+        <CatchSlot
+          slots={list}
+          isScroll={true}
+          position={list.length - 1}
+          visibleIndexes={5}
+          selectedSlot={selectedSlot}
+          setSelectedSlot={setSelectedSlot}
+        />
+        <CatchSlot
+          slots={list}
+          isScroll={true}
+          position={list.length - 1}
+          visibleIndexes={9}
+          selectedSlot={selectedSlot}
+          setSelectedSlot={setSelectedSlot}
+        />
+      </View>
+      <View style={styles.winContainer}>
+        <ImageBackground
+          resizeMode="contain"
+          style={styles.winBackground}
+          source={require("../../assets/images/btn.png")}
+        >
+          <Text style={styles.winText}>WIN:</Text>
+          <Text style={styles.winAmount}>{selectedSlot.length * 100}</Text>
+        </ImageBackground>
+      </View>
     </ImageBackground>
   );
 };
 
-export default CatchGoldScreen;
-
 const styles = StyleSheet.create({
-  container: {
+  imageBackground: {
     flex: 1,
+    paddingTop: 32,
+  },
+  slotContainer: {
+    flex: 1,
+    rowGap: 8,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  winContainer: {
+    width: "100%",
+    alignSelf: "center",
+    paddingBottom: 32,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  winBackground: {
+    height: 100,
+    width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    padding: 10,
   },
-  itemContainer: {
-    margin: 10,
-    backgroundColor: "#f9c2ff",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 100, // Висота елемента
-    width: Dimensions.get("window").width / 3, // Елемент займає всю ширину (всі три колонки)
-    borderRadius: 5,
+  winText: {
+    textAlign: "center",
+    fontFamily: "BlackOpsOne-Regular",
+    fontSize: 24,
+    lineHeight: 22,
+    color: "#fff",
   },
-  itemText: {
-    fontSize: 16,
-    color: "#333",
+  winAmount: {
+    textAlign: "center",
+    fontFamily: "BlackOpsOne-Regular",
+    lineHeight: 31,
+    fontSize: 32,
+    color: "#FFC400",
   },
 });
+
+export default CatchGoldScreen;

@@ -54,6 +54,7 @@ const Slot: FC<SlotProps> = ({ slots, isScroll, position }) => {
     >
       {/* <Animated.View style={[animatedStyle]}> */}
       <Animated.FlatList
+        scrollEnabled={false}
         ref={flatListRef}
         getItemLayout={(data, index) => ({
           length: ITEM_HEIGHT,

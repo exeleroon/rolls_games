@@ -1,7 +1,7 @@
 import { ImageBackground, StyleSheet, Text, View } from "react-native";
 import React, { FC } from "react";
 interface StatusSpinProps {
-  status: "WIN" | "LOSE";
+  status: "WIN" | "LOSE" | "";
 }
 const StatusSpin: FC<StatusSpinProps> = ({ status }) => {
   return (
