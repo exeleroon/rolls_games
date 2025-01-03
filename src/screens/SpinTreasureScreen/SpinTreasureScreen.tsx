@@ -7,11 +7,11 @@ import {
 } from "react-native";
 import React, { useRef } from "react";
 import HeaderScreen from "../../components/HeaderScreen/HeaderScreen";
-import Slot from "../../components/Slot/Slot";
 import { useData } from "./useData";
 import Animated from "react-native-reanimated";
 import BetaController from "../../components/BetaController/BetaController";
 import ButtonBottom from "../../core/ButtonBottom/ButtonBottom";
+import Slot from "../../components/Slot/Slot";
 const SpinTreasureScreen = () => {
   const { slotOptions, beta, onSpinSlots } = useData();
 

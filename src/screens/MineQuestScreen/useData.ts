@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch } from "../../store/hooks";
-import { addCoins, removeCoins } from "../../store/features/balance";
-import { shuffle } from "../../utilits/shuffle";
+import { addCoins, removeCoins } from "../../store/features/slot";
+import { shuffle } from "../../utils/shuffle";
 
 interface Slot {
   img: string;

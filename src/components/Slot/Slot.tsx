@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useRef } from "react";
+import React, { FC, memo, useEffect, useRef } from "react";
 import { Dimensions, FlatList, Image, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
@@ -16,7 +16,7 @@ interface SlotProps {
 
 const ITEM_HEIGHT = 131;
 
-const Slot: FC<SlotProps> = ({ slots, isScroll, position }) => {
+const Slot = memo(function Slot({ slots, isScroll, position }: SlotProps) {
   const _slots = Array.from({ length: 50 }, (_, i) => ({
     ...slots[i % slots.length], // Повторення елементів
     id: `${i + 1}`, // Унікальний ідентифікатор
@@ -88,7 +88,7 @@ const Slot: FC<SlotProps> = ({ slots, isScroll, position }) => {
       {/* </Animated.View> */}
     </View>
   );
-};
+});
 
 export default Slot;
 

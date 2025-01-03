@@ -5,7 +5,7 @@ import HeaderScreen from "../../components/HeaderScreen/HeaderScreen";
 import SettingController from "../../components/SettingController/SettingController";
 import ButtonBottom from "../../core/ButtonBottom/ButtonBottom";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { addCoins, selectCoins } from "../../store/features/balance";
+import { addCoins, selectCoins } from "../../store/features/slot";
 import {
   getFocusedRouteNameFromRoute,
   useRoute,

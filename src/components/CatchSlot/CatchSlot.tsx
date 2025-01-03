@@ -1,5 +1,9 @@
-import { FlatList, StyleSheet, Text, View } from "react-native";
-import React, { FC, useEffect, useMemo, useRef } from "react";
+import {
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  StyleSheet,
+} from "react-native";
+import React, { FC, useCallback, useEffect, useMemo, useRef } from "react";
 import Animated, {
   Easing,
   useAnimatedProps,
@@ -7,8 +11,10 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import CatchGoldItem from "../CatchGoldItem/CatchGoldItem";
-import { getRandomEveryNth } from "../../utilits/getRandomEveryNth";
+import { getRandomEveryNth } from "../../utils/getRandomEveryNth";
+
 const ITEM_HEIGHT = 140;
+const SCREEN_HEIGHT = 500;
 interface CatchSlotProps {
   slots: any[];
   isScroll: boolean;
@@ -16,6 +22,10 @@ interface CatchSlotProps {
   visibleIndexes: number;
   selectedSlot: string[];
   setSelectedSlot: React.Dispatch<React.SetStateAction<string[]>>;
+  scrolledOutItems: { id: string; img: string }[];
+  setScrolledOutItems: React.Dispatch<
+    React.SetStateAction<{ id: string; img: string }[]>
+  >;
 }
 const CatchSlot: FC<CatchSlotProps> = ({
   slots,
@@ -24,7 +34,21 @@ const CatchSlot: FC<CatchSlotProps> = ({
   visibleIndexes,
   selectedSlot,
   setSelectedSlot,
+  scrolledOutItems,
+  setScrolledOutItems,
 }) => {
+  const viewabilityConfig = { itemVisiblePercentThreshold: 50 };
+  const offsetY = useSharedValue(0);
+  // Animate scrolling using reanimated
+  const animatedStyle = useAnimatedProps(() => {
+    return {
+      contentOffset: {
+        x: 0,
+        y: offsetY.value,
+      },
+    };
+  });
+
   const _slots = useMemo(
     () =>
       Array.from({ length: 100 }, (_, i) => {
@@ -36,19 +60,26 @@ const CatchSlot: FC<CatchSlotProps> = ({
       }),
     []
   );
+  const _visibleIndexes = useMemo(
+    () => getRandomEveryNth(_slots, visibleIndexes),
+    [visibleIndexes]
+  );
 
-  const flatListRef = useRef<FlatList>(null);
-  const offsetY = useSharedValue(0);
+  const onViewableItemsChanged = useRef(({ changed }: any) => {
+    const newScrolledOutItems = changed
+      .filter((item: any) => !item.isViewable)
+      .map((item: any) => item.item);
 
-  // Animate scrolling using reanimated
-  const animatedStyle = useAnimatedProps(() => {
-    return {
-      contentOffset: {
-        x: 0,
-        y: offsetY.value,
-      },
-    };
-  });
+    setScrolledOutItems((prevItems) => [
+      ...prevItems,
+      ...newScrolledOutItems.filter(
+        (item: { id: string; img: string }) =>
+          _visibleIndexes.find((i) => i.id === item.id) ||
+          selectedSlot.find((i) => i === item.id)
+      ),
+    ]);
+  }).current;
+
   useEffect(() => {
     if (isScroll) {
       // Animate scroll
@@ -58,30 +89,27 @@ const CatchSlot: FC<CatchSlotProps> = ({
       });
     }
   }, [isScroll, position]);
-  // const randomNumbers: number[] = [];
-  // for (let i = 0; i < slots.length; i += 3) {
-  //   const group = slots.slice(i, i + 3); // Беремо групу з 3 чисел
-  //   const randomIndex = Math.floor(Math.random() * group.length); // Випадковий індекс у межах групи
-  //   randomNumbers.push(group[randomIndex]); // Додаємо випадкове число
-  // }
+
   return (
-    <View style={{ flex: 1 }}>
+    <Animated.View style={{ flex: 1, height: 500 }}>
       <Animated.FlatList
-        scrollEnabled={false}
+        // scrollEnabled={false}
         inverted
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
         animatedProps={animatedStyle}
         data={_slots}
         renderItem={({ index, item }) => (
           <CatchGoldItem
             item={item}
             index={index}
-            visibleIndexes={getRandomEveryNth(_slots, visibleIndexes)}
+            visibleIndexes={_visibleIndexes}
             selectedSlot={selectedSlot}
             setSelectedSlot={setSelectedSlot}
           />
         )}
       />
-    </View>
+    </Animated.View>
   );
 };
 

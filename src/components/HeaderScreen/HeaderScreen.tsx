@@ -1,3 +1,4 @@
+import React, { FC } from "react";
 import {
   Image,
   ImageBackground,
@@ -6,11 +7,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { FC, useState } from "react";
-import { StackActions, useNavigation } from "@react-navigation/native";
-import { useAppSelector } from "../../store/hooks";
-import { selectCoins } from "../../store/features/balance";
-import { RootStackMenuScreenProps } from "../../navigation/RootNavigation.types";
+
+import { useData } from "./useData";
 
 interface HeaderScreenProps {
   title: string;
@@ -23,31 +21,12 @@ const HeaderScreen: FC<HeaderScreenProps> = ({
   visibleGamesBtns,
   visibleLifeCounts,
 }) => {
-  const badges: Record<string, any> = {
-    ["menu"]: require("../../assets/images/menu.png"),
-    ["privacy"]: require("../../assets/images/privacy.png"),
-    ["settings"]: require("../../assets/images/settings.png"),
-    ["games"]: require("../../assets/images/games.png"),
-  };
-  const navigation = useNavigation<RootStackMenuScreenProps["navigation"]>();
-  const coins = useAppSelector(selectCoins);
-  const [life, setLife] = useState<number>(3);
-  const onPressSettings = () => {
-    navigation.dispatch(
-      StackActions.popTo("MenuScreen", {
-        screen: "SettingsScreen",
-      })
-    );
-  };
+  const { badges, coins, life, onGoBack, onPressSettings } = useData();
 
   return (
     <View style={styles.container}>
       <View style={styles.leftSection}>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.pop();
-          }}
-        >
+        <TouchableOpacity onPress={onGoBack}>
           <Image
             resizeMode="contain"
             source={require("../../assets/images/back.png")}
@@ -78,7 +57,7 @@ const HeaderScreen: FC<HeaderScreenProps> = ({
                     resizeMode="contain"
                     style={styles.lifeImage}
                     source={
-                      life < index + 1
+                      life >= index + 1
                         ? require("../../assets/images/wasted.png")
                         : require("../../assets/images/life.png")
                     }

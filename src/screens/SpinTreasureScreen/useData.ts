@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAppSelector } from "../../store/hooks";
-import { selectBeta } from "../../store/features/balance";
+import { selectBeta } from "../../store/features/slot";
 
 interface ISlotOptions {
   id: string;

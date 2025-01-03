@@ -1,8 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
-import balanceSlice from "./features/balance";
+import slotSlice from "./features/slot";
 
 export const store = configureStore({
-  reducer: { balance: balanceSlice },
+  reducer: { slot: slotSlice },
 });
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

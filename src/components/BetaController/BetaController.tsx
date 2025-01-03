@@ -12,7 +12,7 @@ import {
   decrementBeta,
   incrementBeta,
   selectBeta,
-} from "../../store/features/balance";
+} from "../../store/features/slot";
 
 const BetaController = () => {
   const dispatch = useAppDispatch();

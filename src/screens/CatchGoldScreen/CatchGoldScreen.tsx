@@ -16,9 +16,16 @@ import {
   withTiming,
 } from "react-native-reanimated";
 import CatchSlot from "../../components/CatchSlot/CatchSlot";
+import { useAppDispatch } from "../../store/hooks";
+import { updateLife, resetLife } from "../../store/features/slot";
 
 const CatchGoldScreen = () => {
+  const dispatch = useAppDispatch();
   const { list, setList, selectedSlot, setSelectedSlot } = useData();
+  const [wastedLife, setWastedLife] = useState(0);
+  const [scrolledOutItems, setScrolledOutItems] = useState<
+    { id: string; img: string }[]
+  >([]);
 
   const offsetY = useSharedValue<number>(0);
 
@@ -30,31 +37,26 @@ const CatchGoldScreen = () => {
     });
   }, []);
 
-  const ITEM_HEIGHT = 100;
-  const SCREEN_HEIGHT = 500;
-
-  const onScroll = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const offsetY = event.nativeEvent.contentOffset.y;
-      const visibleItems = [...list].filter((_, index) => {
-        const itemStart = index * ITEM_HEIGHT;
-        const itemEnd = itemStart + ITEM_HEIGHT;
-        return itemStart < offsetY + SCREEN_HEIGHT && itemEnd > offsetY;
-      });
-    },
-    []
-  );
-
   useEffect(() => {
     scrollToIndex(list.length - 1);
   }, []);
+  useEffect(() => {
+    if (scrolledOutItems.length > 0 && scrolledOutItems.length < 3) {
+      setWastedLife(scrolledOutItems.length);
+    } else if (scrolledOutItems.length > 3) dispatch(resetLife());
+  }, [scrolledOutItems]);
+  useEffect(() => {
+    dispatch(updateLife(wastedLife));
+    console.log("🚀 ~ useEffect ~ wastedLife:", wastedLife);
+    return () => {};
+  }, [wastedLife]);
 
   return (
     <ImageBackground
       style={styles.imageBackground}
       source={require("../../assets/images/catchGoldBg.png")}
     >
-      <HeaderScreen title="" visibleGamesBtns />
+      <HeaderScreen title="" visibleGamesBtns visibleLifeCounts />
       <View style={styles.slotContainer}>
         <CatchSlot
           slots={list}
@@ -63,6 +65,8 @@ const CatchGoldScreen = () => {
           visibleIndexes={2}
           selectedSlot={selectedSlot}
           setSelectedSlot={setSelectedSlot}
+          scrolledOutItems={scrolledOutItems}
+          setScrolledOutItems={setScrolledOutItems}
         />
         <CatchSlot
           slots={list}
@@ -71,6 +75,8 @@ const CatchGoldScreen = () => {
           visibleIndexes={5}
           selectedSlot={selectedSlot}
           setSelectedSlot={setSelectedSlot}
+          scrolledOutItems={scrolledOutItems}
+          setScrolledOutItems={setScrolledOutItems}
         />
         <CatchSlot
           slots={list}
@@ -79,6 +85,8 @@ const CatchGoldScreen = () => {
           visibleIndexes={9}
           selectedSlot={selectedSlot}
           setSelectedSlot={setSelectedSlot}
+          scrolledOutItems={scrolledOutItems}
+          setScrolledOutItems={setScrolledOutItems}
         />
       </View>
       <View style={styles.winContainer}>
