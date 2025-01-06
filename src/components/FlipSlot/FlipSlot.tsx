@@ -46,7 +46,7 @@ const FlipSlot: FC<FlipSlotProps> = ({
         style={[styles.card, styles.card1]}
         onPress={() => {
           refCard.current[_index]?.flip(); // Use the index-specific ref
-          handleClick(slotId);
+          handleClick(_index);
         }}
       >
         <Image

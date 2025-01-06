@@ -6,34 +6,61 @@ import { shuffle } from "../../utils/shuffle";
 interface Slot {
   img: string;
   id: string;
+  type: string;
 }
 type IStatusSpin = "LOSE" | "WIN" | "";
 export const useData = () => {
   const dispatch = useAppDispatch();
-  const [slots, setSlots] = useState<Slot[]>(() =>
+  const [cards, setSlots] = useState<Slot[]>(() =>
     shuffle(
       [
-        { id: "train", img: require("../../assets/images/slots/train.png") },
-        { id: "wagon", img: require("../../assets/images/slots/wagon.png") },
         {
+          type: "train",
+          id: "train",
+          img: require("../../assets/images/slots/train.png"),
+        },
+        {
+          type: "wagon",
+          id: "wagon",
+          img: require("../../assets/images/slots/wagon.png"),
+        },
+        {
+          type: "piramida",
           id: "piramida",
           img: require("../../assets/images/slots/piramida.png"),
         },
-        { id: "diger", img: require("../../assets/images/slots/diger.png") },
+        {
+          type: "diger",
+          id: "diger",
+          img: require("../../assets/images/slots/diger.png"),
+        },
       ].concat([
-        { id: "train", img: require("../../assets/images/slots/train.png") },
-        { id: "wagon", img: require("../../assets/images/slots/wagon.png") },
         {
+          type: "train",
+          id: "train",
+          img: require("../../assets/images/slots/train.png"),
+        },
+        {
+          type: "wagon",
+          id: "wagon",
+          img: require("../../assets/images/slots/wagon.png"),
+        },
+        {
+          type: "piramida",
           id: "piramida",
           img: require("../../assets/images/slots/piramida.png"),
         },
-        { id: "diger", img: require("../../assets/images/slots/diger.png") },
+        {
+          type: "diger",
+          id: "diger",
+          img: require("../../assets/images/slots/diger.png"),
+        },
       ])
     )
   );
 
-  const [openCards, setOpenCards] = useState<string[]>([]);
-  const [clearedCards, setClearedCards] = useState<Record<string, boolean>>({});
+  const [openCards, setOpenCards] = useState([]);
+  const [clearedCards, setClearedCards] = useState({});
   const [moves, setMoves] = useState<number>(0);
   const [statusSpin, setStatusSpin] = useState<IStatusSpin>("");
   const [resetFlips, setResetFlips] = useState<boolean>(false);
@@ -41,69 +68,40 @@ export const useData = () => {
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
   const evaluate = useCallback(() => {
-    const [first, second, third] = openCards;
-    console.log(
-      "🚀 ~ evaluate ~ openCards:",
-      openCards[moves - 1],
-      openCards[moves],
-      moves
-    );
-
-    if (openCards[moves] === openCards[moves + 1]) {
-      // setClearedCards((prev) => ({ ...prev, [second]: true }));
-      setClearedCards({});
+    const [first, second, third, fourth] = openCards;
+    if (cards[first]?.type === cards[second]?.type) {
+      setClearedCards((prev) => ({ ...prev, [cards[first].type]: true }));
+      dispatch(addCoins(200));
       setOpenCards([]);
-      dispatch(addCoins(200)); // Додати монети за успішний збіг
+      return;
     } else {
+      dispatch(removeCoins(100));
       setStatusSpin("LOSE");
-      dispatch(removeCoins(100)); // Зняти монети за помилку
     }
-
-    // Очистити відкриті карти після перевірки
+    // Flip cards after a 500ms duration
     setOpenCards([]);
   }, [openCards, dispatch]);
 
   const onSelectSlot = useCallback(
-    (slotId: string) => {
-      console.log(
-        "🚀 ~ evaluate ~ openCards:",
-        openCards[moves],
-        openCards,
-
-        openCards[moves + 1],
-        moves
-      );
-      // Заборона вибору карт, поки вже відкриті дві
-      if (openCards.length === 2) return;
-
-      // Якщо карта вже відкрито або знайдено пару, блокувати вибір
-      if (clearedCards[slotId] || openCards.includes(slotId)) return;
-
+    (index: string | number) => {
       if (openCards.length === 1) {
-        // Додати другу карту та збільшити кількість ходів
-        setOpenCards((prev) => [...prev, slotId]);
-        setMoves((prev) => prev + 1);
+        setOpenCards((prev) => [...prev, index]);
+        // increase the moves once we opened a pair
+        setMoves((moves) => moves + 1);
       } else {
-        // Очистити попередній таймер та встановити нову карту
-        if (timeout.current) clearTimeout(timeout.current);
-        setOpenCards([slotId]);
+        // If two cards are already open, we cancel timeout set for flipping cards back
+        clearTimeout(timeout.current);
+        setOpenCards([index]);
       }
     },
     [openCards, clearedCards]
   );
 
   useEffect(() => {
-    if (openCards.length !== 0 && openCards.length % 2 === 0) {
-      timeout.current = setTimeout(() => {
-        evaluate();
-      }, 500);
+    if (openCards.length === 2) {
+      setTimeout(evaluate, 500);
     }
-
-    return () => {
-      if (timeout.current) clearTimeout(timeout.current);
-    };
-  }, [openCards, evaluate]);
-
+  }, [openCards]);
   const checkIsFlipped = useCallback(
     (id: string) => openCards.includes(id),
     [openCards]
@@ -125,12 +123,12 @@ export const useData = () => {
 
   return {
     slots: [
-      ...slots.slice(0, 4),
+      ...cards.slice(0, 4),
       {
         id: "man",
         img: require("../../assets/images/man.png"),
       },
-      ...slots.slice(4),
+      ...cards.slice(4),
     ],
     statusSpin,
     checkIsFlipped,
