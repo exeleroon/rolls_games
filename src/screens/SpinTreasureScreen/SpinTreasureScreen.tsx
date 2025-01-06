@@ -13,7 +13,7 @@ import BetaController from "../../components/BetaController/BetaController";
 import ButtonBottom from "../../core/ButtonBottom/ButtonBottom";
 import Slot from "../../components/Slot/Slot";
 const SpinTreasureScreen = () => {
-  const { slotOptions, beta, onSpinSlots } = useData();
+  const { slotOptions, setPositions, beta, onSpinSlots } = useData();
 
   return (
     <ImageBackground
@@ -35,6 +35,7 @@ const SpinTreasureScreen = () => {
         {[1, 4, 6, 7].map((item, index) => (
           <Slot
             key={index}
+            setPositions={setPositions}
             isScroll={slotOptions[item]?.isScroll}
             position={slotOptions[item]?.position}
             slots={[
@@ -54,8 +55,6 @@ const SpinTreasureScreen = () => {
                 id: "7",
                 img: require("../../assets/images/slots/wagon_2.png"),
               },
-              { id: "8", img: require("../../assets/images/slots/barge.png") },
-              { id: "9", img: require("../../assets/images/slots/barge.png") },
             ]}
           />
         ))}

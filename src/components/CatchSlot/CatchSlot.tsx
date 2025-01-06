@@ -37,6 +37,7 @@ const CatchSlot: FC<CatchSlotProps> = ({
   scrolledOutItems,
   setScrolledOutItems,
 }) => {
+  console.log("🚀 ~ selectedSlot:", selectedSlot);
   const viewabilityConfig = { itemVisiblePercentThreshold: 50 };
   const offsetY = useSharedValue(0);
   // Animate scrolling using reanimated
@@ -64,20 +65,21 @@ const CatchSlot: FC<CatchSlotProps> = ({
     () => getRandomEveryNth(_slots, visibleIndexes),
     [visibleIndexes]
   );
-
+  const _selectedIndexes = useMemo(() => selectedSlot, [selectedSlot]);
   const onViewableItemsChanged = useRef(({ changed }: any) => {
-    const newScrolledOutItems = changed
+    let newScrolledOutItems = changed
       .filter((item: any) => !item.isViewable)
       .map((item: any) => item.item);
 
-    setScrolledOutItems((prevItems) => [
-      ...prevItems,
-      ...newScrolledOutItems.filter(
-        (item: { id: string; img: string }) =>
-          _visibleIndexes.find((i) => i.id === item.id) ||
-          selectedSlot.find((i) => i === item.id)
-      ),
-    ]);
+    newScrolledOutItems = newScrolledOutItems.filter(
+      (item: { id: string; img: string }) =>
+        _visibleIndexes.find((i) => i.id === item.id)
+    );
+    // newScrolledOutItems = newScrolledOutItems.filter(
+    //   (item: { id: string; img: string }) =>
+    //     !_selectedIndexes.find((i) => i === item.id)
+    // );
+    setScrolledOutItems((prevItems) => [...prevItems, ...newScrolledOutItems]);
   }).current;
 
   useEffect(() => {

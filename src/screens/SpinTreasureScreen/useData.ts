@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
-import { useAppSelector } from "../../store/hooks";
-import { selectBeta } from "../../store/features/slot";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { addCoins, removeCoins, selectBeta } from "../../store/features/slot";
+import { findCommonElements } from "../../utils/findCommonElements";
 
 interface ISlotOptions {
   id: string;
@@ -8,11 +9,20 @@ interface ISlotOptions {
   isScroll: boolean;
 }
 export const useData = () => {
+  let maxScroll = 0;
   const [slotOptions, setSlotOptions] = useState<ISlotOptions[]>([]);
   const beta = useAppSelector(selectBeta);
+  const [positions, setPositions] = useState<number[]>([]);
+  const dispatch = useAppDispatch();
+  const visiblePositions = useMemo(() => {
+    return (
+      !slotOptions.at(-1)?.isScroll &&
+      positions.map((position, index) => [position, position - 2, position - 1])
+    );
+  }, [positions, slotOptions]);
 
-  let maxScroll = 0;
   const onSpinSlots = useCallback(() => {
+    setPositions([]);
     let interval = setInterval(() => {
       if (maxScroll <= 51) {
         setSlotOptions((prev) => [
@@ -34,6 +44,25 @@ export const useData = () => {
   useEffect(() => {
     onSpinSlots();
   }, []);
+  useEffect(() => {
+    if (
+      typeof visiblePositions !== "boolean" &&
+      Array.isArray(visiblePositions) &&
+      visiblePositions.length >= 3
+    ) {
+      console.log("🚀 ~ useEffect ~ visiblePositions:", visiblePositions);
+      console.log(
+        "findCommonElements(visiblePositions)",
+        findCommonElements(findCommonElements(visiblePositions.map((i) => i)))
+      );
+      if (findCommonElements(...visiblePositions.map((i) => i))) {
+        dispatch(addCoins(beta + 100));
+      } else {
+        dispatch(removeCoins(beta));
+      }
+    }
+    return () => {};
+  }, [visiblePositions]);
 
-  return { setSlotOptions, slotOptions, beta, onSpinSlots };
+  return { setSlotOptions, setPositions, slotOptions, beta, onSpinSlots };
 };

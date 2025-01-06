@@ -41,10 +41,25 @@ const CatchGoldScreen = () => {
     scrollToIndex(list.length - 1);
   }, []);
   useEffect(() => {
-    if (scrolledOutItems.length > 0 && scrolledOutItems.length < 3) {
-      setWastedLife(scrolledOutItems.length);
-    } else if (scrolledOutItems.length > 3) dispatch(resetLife());
-  }, [scrolledOutItems]);
+    console.log(scrolledOutItems);
+
+    if (scrolledOutItems.length > 0 && scrolledOutItems.length < 4)
+      // if (
+      //   !selectedSlot.find((i) =>
+      //     scrolledOutItems.find((item) => item.id === i)
+      //   )
+      // )
+      setWastedLife(
+        scrolledOutItems.filter((i) => !selectedSlot.includes(i.id)).length
+      );
+    // } else if (scrolledOutItems.length > 3) dispatch(resetLife());
+  }, [scrolledOutItems, selectedSlot]);
+  // useEffect(() => {
+  //   setScrolledOutItems((prev) =>
+  //     prev.filter((item) => selectedSlot.includes(item.id))
+  //   );
+  // }, [scrolledOutItems, selectedSlot]);
+
   useEffect(() => {
     dispatch(updateLife(wastedLife));
     console.log("🚀 ~ useEffect ~ wastedLife:", wastedLife);

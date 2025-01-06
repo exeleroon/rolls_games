@@ -10,13 +10,19 @@ import Animated, {
 
 interface SlotProps {
   slots: any[];
+  setPositions: React.Dispatch<React.SetStateAction<number[]>>;
   isScroll: boolean;
   position: number;
 }
 
 const ITEM_HEIGHT = 131;
 
-const Slot = memo(function Slot({ slots, isScroll, position }: SlotProps) {
+const Slot = memo(function Slot({
+  slots,
+  isScroll,
+  position,
+  setPositions,
+}: SlotProps) {
   const _slots = Array.from({ length: 50 }, (_, i) => ({
     ...slots[i % slots.length], // Повторення елементів
     id: `${i + 1}`, // Унікальний ідентифікатор
@@ -24,7 +30,6 @@ const Slot = memo(function Slot({ slots, isScroll, position }: SlotProps) {
 
   const flatListRef = useRef<FlatList>(null);
   const offsetY = useSharedValue(0);
-
   // Animate scrolling using reanimated
   const animatedStyle = useAnimatedProps(() => {
     return {
@@ -41,6 +46,7 @@ const Slot = memo(function Slot({ slots, isScroll, position }: SlotProps) {
         duration: 1300,
         easing: Easing.linear,
       });
+      setPositions((prev) => [...prev, position]);
     }
   }, [isScroll, position]);
 
