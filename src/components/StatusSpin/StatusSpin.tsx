@@ -2,8 +2,9 @@ import { ImageBackground, StyleSheet, Text, View } from "react-native";
 import React, { FC } from "react";
 interface StatusSpinProps {
   status: "WIN" | "LOSE" | "";
+  winCoins?: number;
 }
-const StatusSpin: FC<StatusSpinProps> = ({ status }) => {
+const StatusSpin: FC<StatusSpinProps> = ({ status, winCoins }) => {
   return (
     <ImageBackground
       resizeMode="contain"
@@ -36,7 +37,8 @@ const StatusSpin: FC<StatusSpinProps> = ({ status }) => {
             textAlign: "center",
           }}
         >
-          100{"\n"}
+          {winCoins || 100}
+          {"\n"}
           <Text
             style={{
               fontSize: 44,

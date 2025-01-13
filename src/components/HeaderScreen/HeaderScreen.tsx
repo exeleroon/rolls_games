@@ -9,20 +9,29 @@ import {
 } from "react-native";
 
 import { useData } from "./useData";
+import Timer from "../Timer/Timer";
+import { Header } from "react-native/Libraries/NewAppScreen";
+interface TimerProps {
+  isStart: boolean;
+  setIsFinish: () => void;
+}
 
 interface HeaderScreenProps {
   title: string;
   visibleGamesBtns?: boolean;
   visibleLifeCounts?: boolean;
+  visibleTimer?: boolean;
+  timerProps?: TimerProps;
 }
-
 const HeaderScreen: FC<HeaderScreenProps> = ({
   title,
   visibleGamesBtns,
   visibleLifeCounts,
+  visibleTimer,
+  timerProps = { isStart: false, setIsFinish: () => {} },
 }) => {
   const { badges, coins, life, onGoBack, onPressSettings } = useData();
-
+  const { isStart, setIsFinish } = timerProps;
   return (
     <View style={styles.container}>
       <View style={styles.leftSection}>
@@ -33,6 +42,7 @@ const HeaderScreen: FC<HeaderScreenProps> = ({
             style={styles.backButton}
           />
         </TouchableOpacity>
+        {visibleTimer && <Timer isStart={isStart} setIsFinish={setIsFinish} />}
         <Image
           resizeMode="contain"
           source={badges[title]}
@@ -103,9 +113,10 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   coinContainer: {
-    height: 45,
+    maxHeight: 45,
     marginTop: 12,
-    width: 120,
+    width: 140,
+    flex: 1,
     paddingRight: 20,
     alignItems: "flex-end",
     justifyContent: "center",
@@ -118,14 +129,15 @@ const styles = StyleSheet.create({
   },
   lifeAndSettingsContainer: {
     flexDirection: "row",
+    alignItems: "center",
   },
   lifeContainer: {
     width: 140,
     paddingHorizontal: 10,
-    height: 64,
+    height: 48,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-around",
+    justifyContent: "center",
     backgroundColor: "#341806",
     borderRadius: 100,
     borderColor: "#FFE500",

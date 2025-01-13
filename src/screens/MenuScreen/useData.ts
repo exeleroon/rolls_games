@@ -1,6 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { RootStackMenuScreenProps } from "../../navigation/RootNavigation.types";
 import { MenuStackScreenProps } from "../../navigation/MenuNavigation.types";
+import Sound from "react-native-sound";
 
 export const useData = () => {
   const navigation = useNavigation<MenuStackScreenProps["navigation"]>();

@@ -1,9 +1,18 @@
 import {
+  FlatList,
   NativeScrollEvent,
   NativeSyntheticEvent,
   StyleSheet,
+  View,
 } from "react-native";
-import React, { FC, useCallback, useEffect, useMemo, useRef } from "react";
+import React, {
+  FC,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import Animated, {
   Easing,
   useAnimatedProps,
@@ -12,9 +21,10 @@ import Animated, {
 } from "react-native-reanimated";
 import CatchGoldItem from "../CatchGoldItem/CatchGoldItem";
 import { getRandomEveryNth } from "../../utils/getRandomEveryNth";
+import { shuffle } from "../../utils/shuffle";
 
 const ITEM_HEIGHT = 140;
-const SCREEN_HEIGHT = 500;
+const SCREEN_HEIGHT = 600;
 interface CatchSlotProps {
   slots: any[];
   isScroll: boolean;
@@ -37,7 +47,6 @@ const CatchSlot: FC<CatchSlotProps> = ({
   scrolledOutItems,
   setScrolledOutItems,
 }) => {
-  console.log("🚀 ~ selectedSlot:", selectedSlot);
   const viewabilityConfig = { itemVisiblePercentThreshold: 50 };
   const offsetY = useSharedValue(0);
   // Animate scrolling using reanimated
@@ -52,20 +61,22 @@ const CatchSlot: FC<CatchSlotProps> = ({
 
   const _slots = useMemo(
     () =>
-      Array.from({ length: 100 }, (_, i) => {
-        const item = slots[i % slots.length]; // Циклічний доступ до елементів шаблону
-        return {
-          id: `${item.id}-${Date.now()}-${i}`, // Унікальний ID
-          img: item.img,
-        };
-      }),
+      shuffle(
+        Array.from({ length: 100 }, (_, i) => {
+          const item = slots[i % slots.length]; // Циклічний доступ до елементів шаблону
+          return {
+            id: `${item.id}-${Date.now()}-${i}`, // Унікальний ID
+            img: item.img,
+          };
+        })
+      ),
     []
   );
   const _visibleIndexes = useMemo(
     () => getRandomEveryNth(_slots, visibleIndexes),
     [visibleIndexes]
   );
-  const _selectedIndexes = useMemo(() => selectedSlot, [selectedSlot]);
+
   const onViewableItemsChanged = useRef(({ changed }: any) => {
     let newScrolledOutItems = changed
       .filter((item: any) => !item.isViewable)
@@ -75,10 +86,7 @@ const CatchSlot: FC<CatchSlotProps> = ({
       (item: { id: string; img: string }) =>
         _visibleIndexes.find((i) => i.id === item.id)
     );
-    // newScrolledOutItems = newScrolledOutItems.filter(
-    //   (item: { id: string; img: string }) =>
-    //     !_selectedIndexes.find((i) => i === item.id)
-    // );
+
     setScrolledOutItems((prevItems) => [...prevItems, ...newScrolledOutItems]);
   }).current;
 
@@ -86,16 +94,15 @@ const CatchSlot: FC<CatchSlotProps> = ({
     if (isScroll) {
       // Animate scroll
       offsetY.value = withTiming(position * ITEM_HEIGHT + 10, {
-        duration: 75000,
+        duration: 35000,
         easing: Easing.linear,
       });
     }
   }, [isScroll, position]);
-
   return (
-    <Animated.View style={{ flex: 1, height: 500 }}>
+    <View style={{ flex: 1, height: 600 }}>
       <Animated.FlatList
-        // scrollEnabled={false}
+        scrollEnabled={false}
         inverted
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
@@ -111,7 +118,7 @@ const CatchSlot: FC<CatchSlotProps> = ({
           />
         )}
       />
-    </Animated.View>
+    </View>
   );
 };
 

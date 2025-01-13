@@ -13,7 +13,14 @@ import BetaController from "../../components/BetaController/BetaController";
 import ButtonBottom from "../../core/ButtonBottom/ButtonBottom";
 import Slot from "../../components/Slot/Slot";
 const SpinTreasureScreen = () => {
-  const { slotOptions, setPositions, beta, onSpinSlots } = useData();
+  const {
+    winCoins,
+    disabledActions,
+    slotOptions,
+    setPositions,
+    beta,
+    onSpinSlots,
+  } = useData();
 
   return (
     <ImageBackground
@@ -25,7 +32,7 @@ const SpinTreasureScreen = () => {
         style={{
           backgroundColor: "##F88B00",
           flex: 1,
-          top: -40,
+          top: -80,
           flexDirection: "row",
           alignItems: "flex-start",
           justifyContent: "center",
@@ -83,11 +90,15 @@ const SpinTreasureScreen = () => {
             color: "#FFC400",
           }}
         >
-          {beta * 2}
+          {winCoins}
         </Text>
       </View>
-      <BetaController />
-      <ButtonBottom label="START" onPress={onSpinSlots} />
+      <BetaController isDisabled={disabledActions} />
+      <ButtonBottom
+        isDisabled={disabledActions}
+        label="START"
+        onPress={onSpinSlots}
+      />
     </ImageBackground>
   );
 };

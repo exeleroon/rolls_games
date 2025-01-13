@@ -5,60 +5,78 @@ import {
   ImageBackground,
   ImageSourcePropType,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
-import React from "react";
 import HeaderScreen from "../../components/HeaderScreen/HeaderScreen";
-import { useData } from "./useData";
-import FlipSlot from "../../components/FlipSlot/FlipSlot";
 import ButtonBottom from "../../core/ButtonBottom/ButtonBottom";
 import StatusSpin from "../../components/StatusSpin/StatusSpin";
+import Card from "../../components/Card/Card";
 
+import { useData } from "./useData";
 const MineQuestScreen = () => {
   const {
-    slots,
-    resetFlips,
+    cards,
+    selectedCards,
+    matchedCards,
+    isStartTimer,
     statusSpin,
-    checkIsFlipped,
-    checkIsInactive,
-    onSelectSlot,
+    setIsStartTimer,
+    handleCardPress,
     onPressAgain,
   } = useData();
-  console.log(slots);
 
   return (
     <ImageBackground
       style={{ flex: 1, paddingTop: 32 }}
       source={require("../../assets/images/mineQuestBg.png")}
     >
-      <HeaderScreen title="" visibleGamesBtns />
+      <HeaderScreen
+        title=""
+        visibleGamesBtns
+        visibleTimer
+        timerProps={{
+          isStart: isStartTimer,
+          setIsFinish: () => {
+            setIsStartTimer(false);
+          },
+        }}
+      />
       {["WIN", "LOSE"].includes(statusSpin) ? (
         <View style={{ flex: 1, alignItems: "center" }}>
           <StatusSpin status={statusSpin} />
         </View>
       ) : (
-        <View style={{ flex: 1, alignItems: "center" }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "flex-start",
+            alignItems: "center",
+          }}
+        >
           <FlatList
             numColumns={3}
-            data={slots}
+            data={cards as unknown as (string | { img: string; id: "man" })[]}
             contentContainerStyle={{
               alignItems: "center",
               justifyContent: "space-between",
               width: "100%",
               gap: 10,
             }}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item, index }) =>
-              item.id !== "man" ? (
-                <FlipSlot
-                  isFlipped={checkIsFlipped(item.id)}
-                  isInactive={checkIsInactive(item)}
-                  resetFlips={resetFlips}
-                  onSelectSlot={onSelectSlot}
-                  slotId={item.id}
-                  img={item.img}
-                  _index={index}
+            renderItem={({
+              item,
+              index,
+            }: {
+              item: string | { img: string; id: string };
+              index: number;
+            }) =>
+              item?.id !== "man" ? (
+                <Card
+                  symbol={item as string}
+                  isFlipped={
+                    matchedCards.includes(index) ||
+                    selectedCards.includes(index)
+                  }
+                  onPress={() => handleCardPress(index)}
                 />
               ) : (
                 <Image

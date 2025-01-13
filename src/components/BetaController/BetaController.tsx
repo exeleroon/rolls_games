@@ -6,20 +6,23 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React from "react";
+import React, { FC } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import {
   decrementBeta,
   incrementBeta,
   selectBeta,
 } from "../../store/features/slot";
-
-const BetaController = () => {
+interface BetaControllerProps {
+  isDisabled: boolean;
+}
+const BetaController: FC<BetaControllerProps> = ({ isDisabled }) => {
   const dispatch = useAppDispatch();
   const beta = useAppSelector(selectBeta);
   return (
     <View style={styles.container}>
       <TouchableOpacity
+        disabled={isDisabled}
         onPress={() => {
           dispatch(decrementBeta(100));
         }}
@@ -38,6 +41,7 @@ const BetaController = () => {
         <Text style={styles.textBeta}>{beta}</Text>
       </ImageBackground>
       <TouchableOpacity
+        disabled={isDisabled}
         onPress={() => {
           dispatch(incrementBeta(100));
         }}

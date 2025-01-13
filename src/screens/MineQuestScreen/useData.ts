@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch } from "../../store/hooks";
 import { addCoins, removeCoins } from "../../store/features/slot";
 import { shuffle } from "../../utils/shuffle";
+import CardFlip from "react-native-card-flip";
 
 interface Slot {
   img: string;
@@ -11,131 +12,95 @@ interface Slot {
 type IStatusSpin = "LOSE" | "WIN" | "";
 export const useData = () => {
   const dispatch = useAppDispatch();
-  const [cards, setSlots] = useState<Slot[]>(() =>
-    shuffle(
-      [
-        {
-          type: "train",
-          id: "train",
-          img: require("../../assets/images/slots/train.png"),
-        },
-        {
-          type: "wagon",
-          id: "wagon",
-          img: require("../../assets/images/slots/wagon.png"),
-        },
-        {
-          type: "piramida",
-          id: "piramida",
-          img: require("../../assets/images/slots/piramida.png"),
-        },
-        {
-          type: "diger",
-          id: "diger",
-          img: require("../../assets/images/slots/diger.png"),
-        },
-      ].concat([
-        {
-          type: "train",
-          id: "train",
-          img: require("../../assets/images/slots/train.png"),
-        },
-        {
-          type: "wagon",
-          id: "wagon",
-          img: require("../../assets/images/slots/wagon.png"),
-        },
-        {
-          type: "piramida",
-          id: "piramida",
-          img: require("../../assets/images/slots/piramida.png"),
-        },
-        {
-          type: "diger",
-          id: "diger",
-          img: require("../../assets/images/slots/diger.png"),
-        },
-      ])
-    )
-  );
-
-  const [openCards, setOpenCards] = useState([]);
-  const [clearedCards, setClearedCards] = useState({});
-  const [moves, setMoves] = useState<number>(0);
+  const [cards, setCards] = useState<string[]>([]);
+  const [selectedCards, setSelectedCards] = useState<number[]>([]);
+  const [matchedCards, setMatchedCards] = useState<number[]>([]);
+  const [moves, setMoves] = useState(0);
   const [statusSpin, setStatusSpin] = useState<IStatusSpin>("");
-  const [resetFlips, setResetFlips] = useState<boolean>(false);
+  const [isStartTimer, setIsStartTimer] = useState<boolean>(true);
+  useEffect(() => {
+    initializeGame();
+  }, []);
 
-  const timeout = useRef<NodeJS.Timeout | null>(null);
+  const initializeGame = () => {
+    const images = [
+      require("../../assets/images/slots/train.png"),
+      require("../../assets/images/slots/wagon.png"),
+      require("../../assets/images/slots/piramida.png"),
+      require("../../assets/images/slots/diger.png"),
+    ]; // Символи для пар
+    const shuffledCards = shuffle([
+      ...images.concat([
+        require("../../assets/images/slots/train.png"),
+        require("../../assets/images/slots/wagon.png"),
 
-  const evaluate = useCallback(() => {
-    const [first, second, third, fourth] = openCards;
-    if (cards[first]?.type === cards[second]?.type) {
-      setClearedCards((prev) => ({ ...prev, [cards[first].type]: true }));
-      dispatch(addCoins(200));
-      setOpenCards([]);
+        require("../../assets/images/slots/piramida.png"),
+
+        require("../../assets/images/slots/diger.png"),
+      ]),
+    ]);
+    setCards([
+      ...shuffledCards.slice(0, 4),
+      { id: "man", img: require("../../assets/images/man.png") },
+      ...shuffledCards.slice(4),
+    ]);
+    setSelectedCards([]);
+    setMatchedCards([]);
+    setMoves(0);
+  };
+
+  const handleCardPress = (index: number) => {
+    if (
+      selectedCards.length === 2 ||
+      selectedCards.includes(index) ||
+      matchedCards.includes(index)
+    ) {
       return;
-    } else {
-      dispatch(removeCoins(100));
-      setStatusSpin("LOSE");
     }
-    // Flip cards after a 500ms duration
-    setOpenCards([]);
-  }, [openCards, dispatch]);
 
-  const onSelectSlot = useCallback(
-    (index: string | number) => {
-      if (openCards.length === 1) {
-        setOpenCards((prev) => [...prev, index]);
-        // increase the moves once we opened a pair
-        setMoves((moves) => moves + 1);
-      } else {
-        // If two cards are already open, we cancel timeout set for flipping cards back
-        clearTimeout(timeout.current);
-        setOpenCards([index]);
+    setSelectedCards((prev) => [...prev, index]);
+
+    if (selectedCards.length === 1) {
+      const firstCardIndex = selectedCards[0];
+      const secondCardIndex = index;
+
+      if (cards[firstCardIndex] === cards[secondCardIndex]) {
+        setMatchedCards((prev) => [...prev, firstCardIndex, secondCardIndex]);
       }
-    },
-    [openCards, clearedCards]
-  );
+
+      setTimeout(() => {
+        setSelectedCards([]);
+      }, 1000);
+
+      setMoves((prev) => prev + 1);
+    }
+  };
 
   useEffect(() => {
-    if (openCards.length === 2) {
-      setTimeout(evaluate, 500);
+    if (isStartTimer === false && matchedCards.length < 8) {
+      setStatusSpin("LOSE");
+      dispatch(removeCoins(100));
+    } else if (matchedCards.length === 8) {
+      setStatusSpin("WIN");
+      dispatch(addCoins(200));
     }
-  }, [openCards]);
-  const checkIsFlipped = useCallback(
-    (id: string) => openCards.includes(id),
-    [openCards]
-  );
-
-  const checkIsInactive = useCallback(
-    (slot: Slot) => Boolean(clearedCards[slot.id]),
-    [clearedCards]
-  );
-
+  }, [matchedCards, isStartTimer]);
   const onPressAgain = useCallback(() => {
     setStatusSpin("");
-    setResetFlips(true);
-    setSlots((prevSlots) => shuffle(prevSlots));
-    setClearedCards({});
-    setOpenCards([]);
+    setIsStartTimer(true);
+    // setClearedCards({});
     setMoves(0);
   }, []);
 
   return {
-    slots: [
-      ...cards.slice(0, 4),
-      {
-        id: "man",
-        img: require("../../assets/images/man.png"),
-      },
-      ...cards.slice(4),
-    ],
-    statusSpin,
-    checkIsFlipped,
-    checkIsInactive,
-    onSelectSlot,
-    onPressAgain,
-    resetFlips,
+    cards,
     moves,
+    selectedCards,
+    matchedCards,
+    isStartTimer,
+    statusSpin,
+    setIsStartTimer,
+    handleCardPress,
+    onPressAgain,
   };
 };

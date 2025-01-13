@@ -9,13 +9,15 @@ import {
 import React, { FC } from "react";
 interface ButtonBottomProps {
   label: string;
+  isDisabled?: boolean;
 }
 const ButtonBottom: FC<ButtonBottomProps & TouchableOpacityProps> = ({
   label = "",
+  isDisabled,
   onPress,
 }) => {
   return (
-    <TouchableOpacity onPress={onPress}>
+    <TouchableOpacity onPress={onPress} disabled={isDisabled}>
       <ImageBackground
         resizeMode="contain"
         style={{

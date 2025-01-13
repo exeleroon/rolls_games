@@ -1,5 +1,12 @@
 import React, { FC, memo, useEffect, useRef } from "react";
-import { Dimensions, FlatList, Image, StyleSheet, View } from "react-native";
+import {
+  Dimensions,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import Animated, {
   Easing,
   useAnimatedProps,
@@ -7,6 +14,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import Sound from "react-native-sound";
 
 interface SlotProps {
   slots: any[];
@@ -15,7 +23,7 @@ interface SlotProps {
   position: number;
 }
 
-const ITEM_HEIGHT = 131;
+const ITEM_HEIGHT = 120;
 
 const Slot = memo(function Slot({
   slots,
@@ -25,9 +33,21 @@ const Slot = memo(function Slot({
 }: SlotProps) {
   const _slots = Array.from({ length: 50 }, (_, i) => ({
     ...slots[i % slots.length], // Повторення елементів
-    id: `${i + 1}`, // Унікальний ідентифікатор
+    id: slots[i % slots.length].id + `${i + 1}`, // Унікальний ідентифікатор
   }));
+  const viewabilityConfig = { itemVisiblePercentThreshold: 50 };
 
+  const onViewableItemsChanged = ({ viewableItems, changed }: any) => {
+    console.log("🚀 ~ onViewableItemsChanged ~ changed:", changed);
+    console.log("🚀 ~ viewableItems:", viewableItems);
+    setPositions((prev) => [
+      ...prev,
+      // viewableItems.length >= 3 &&
+      viewableItems
+        .map((item) => item.isViewable && item.item.img + "")
+        .filter((item) => typeof item !== "boolean"),
+    ]);
+  };
   const flatListRef = useRef<FlatList>(null);
   const offsetY = useSharedValue(0);
   // Animate scrolling using reanimated
@@ -40,26 +60,33 @@ const Slot = memo(function Slot({
     };
   });
   useEffect(() => {
-    if (isScroll) {
-      // Animate scroll
-      offsetY.value = withTiming(position * ITEM_HEIGHT + 10, {
-        duration: 1300,
-        easing: Easing.linear,
-      });
-      setPositions((prev) => [...prev, position]);
-    }
+    try {
+      if (isScroll) {
+        // Animate scroll
+        offsetY.value = withTiming(position * ITEM_HEIGHT, {
+          duration: 1200,
+          easing: Easing.linear,
+        });
+        // setPositions((prev) => [...prev, _slots[position]?.id]);
+      }
+    } catch (error) {}
   }, [isScroll, position]);
 
   return (
     <View
       style={{
         alignItems: "center",
+        flex: 1,
         height: 360,
         width: Dimensions.get("window").width / 4 - 10,
       }}
     >
       {/* <Animated.View style={[animatedStyle]}> */}
       <Animated.FlatList
+        pagingEnabled
+        disableIntervalMomentum={true}
+        viewabilityConfig={viewabilityConfig}
+        onViewableItemsChanged={onViewableItemsChanged}
         scrollEnabled={false}
         ref={flatListRef}
         getItemLayout={(data, index) => ({
@@ -80,6 +107,8 @@ const Slot = memo(function Slot({
             style={{
               height: ITEM_HEIGHT,
               alignSelf: "center",
+              justifyContent: "center",
+              alignItems: "center",
               width: Dimensions.get("window").width / 4 - 24,
             }}
           >
@@ -88,6 +117,7 @@ const Slot = memo(function Slot({
               style={{ width: "95%", height: "100%" }}
               source={item.img}
             />
+            {/* <Text>{item.img}</Text> */}
           </View>
         )}
       />

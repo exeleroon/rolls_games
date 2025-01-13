@@ -11,15 +11,22 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import { MenuStackScreenProps } from "../../navigation/MenuNavigation.types";
+import {
+  changeFVXVolume,
+  changeSoundVolume,
+  selectVFXVolume,
+  selectSoundVolume,
+} from "../../store/features/setting";
 
 const SettingsScreen = () => {
+  const volumeMusic = useAppSelector(selectSoundVolume);
+  const volumeVFX = useAppSelector(selectVFXVolume);
   const dispatch = useAppDispatch();
-  const [volumeMusic, setVolumeMusic] = useState<number>(0);
-  const [volumeVFX, setVolumeFVX] = useState<number>(0);
   const coins = useAppSelector(selectCoins);
   const onResetScore = useCallback(() => {
-    setVolumeFVX(3);
-    setVolumeMusic(3);
+    dispatch(changeSoundVolume(0));
+    dispatch(changeFVXVolume(0));
+
     coins === 0 && dispatch(addCoins(5000));
   }, [coins]);
 
@@ -29,13 +36,17 @@ const SettingsScreen = () => {
         <HeaderScreen title="settings" />
         <SettingController
           title="Music"
-          volume={volumeMusic}
-          onChangeVolume={setVolumeMusic}
+          volume={(volumeMusic * 10) / 3}
+          onChangeVolume={(volume) => {
+            dispatch(changeSoundVolume(volume * 3));
+          }}
         />
         <SettingController
           title="VFX"
           volume={volumeVFX}
-          onChangeVolume={setVolumeFVX}
+          onChangeVolume={(volume) => {
+            dispatch(changeFVXVolume(volume));
+          }}
         />
       </View>
       <ButtonBottom label="RESET SCORE" onPress={onResetScore} />

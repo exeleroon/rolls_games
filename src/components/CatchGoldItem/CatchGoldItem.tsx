@@ -19,10 +19,8 @@ const CatchGoldItem = memo(function CatchGoldItem({
   setSelectedSlot,
 }: any) {
   return (
-    <Animated.View
+    <View
       key={item.id}
-      layout={LinearTransition}
-      exiting={FadeOutRight}
       style={[
         styles.item,
         {
@@ -33,10 +31,15 @@ const CatchGoldItem = memo(function CatchGoldItem({
       ]}
     >
       <TouchableOpacity
-        onPress={() => setSelectedSlot((prev: any) => [...prev, item.id])}
+        onPress={() =>
+          item.id.toString().slice(0, 4) === "dead"
+            ? setSelectedSlot((prev: any) => [...prev, "dead"])
+            : setSelectedSlot((prev: any) => [...prev, item.id])
+        }
       >
-        {!selectedSlot.find((i: any) => i === item.id) &&
-        visibleIndexes.find((i: any) => i.id === item.id) ? (
+        {(!selectedSlot.find((i: any) => i === item.id) &&
+          visibleIndexes.find((i: any) => i.id === item.id)) ||
+        !item.id.toString().search("dead") ? (
           <Image resizeMode="contain" style={[styles.img]} source={item.img} />
         ) : (
           <View
@@ -46,18 +49,18 @@ const CatchGoldItem = memo(function CatchGoldItem({
           />
         )}
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   );
 });
 export default CatchGoldItem;
 const styles = StyleSheet.create({
   item: {
     height: 140,
-    width: Dimensions.get("window").width / 3 - 20,
+    width: Dimensions.get("window").width / 3 - 10,
     paddingHorizontal: 24,
   },
   img: {
-    height: 140,
-    width: Dimensions.get("window").width / 3 - 40,
+    height: 100,
+    width: Dimensions.get("window").width / 3 - 20,
   },
 });

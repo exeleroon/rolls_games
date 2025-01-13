@@ -1,12 +1,15 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, ScrollView, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import HeaderScreen from "../../components/HeaderScreen/HeaderScreen";
 import ScreenWrapper from "../wrappers/ScreenWrapper/ScreenWrapper";
 import { useData } from "./useData";
 import SvgButtonAccept from "../../core/SvgButtonAccept/SvgButtonAccept";
+import { selectIsOnBoarding } from "../../store/features/setting";
+import { useAppSelector } from "../../store/hooks";
 
 const PrivacyScreen = () => {
   const { visiblePrivacy, setVisiblePrivacy } = useData();
+  const isOnBoarding = useAppSelector(selectIsOnBoarding);
   return (
     <ScreenWrapper>
       <HeaderScreen title="privacy" />
@@ -29,7 +32,7 @@ const PrivacyScreen = () => {
                   },
                 ]}
                 onPress={() => {
-                  setVisiblePrivacy(true);
+                  Linking.openURL("https://google.com");
                 }}
               >
                 Read privacy
@@ -107,7 +110,7 @@ const PrivacyScreen = () => {
           )}
         </View>
       </View>
-      <SvgButtonAccept />
+      {!isOnBoarding && <SvgButtonAccept />}
     </ScreenWrapper>
   );
 };

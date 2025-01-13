@@ -1,6 +1,8 @@
 import type { StackScreenProps } from "@react-navigation/stack";
+import SplashScreen from "../screens/SplashScreen/SplashScreen";
 
 export type RootStackParamList = {
+  SplashScreen: undefined;
   StartScreen: undefined;
   MenuScreen: undefined;
 };

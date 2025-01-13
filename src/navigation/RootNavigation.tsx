@@ -1,24 +1,36 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { RootStackParamList } from "./RootNavigation.types";
-import {
-  NavigationContainer,
-  NavigationContainerRef,
-} from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
+
 import StartScreen from "../screens/StartScreen/StartScreen";
-import MenuScreen from "../screens/MenuScreen/MenuScreen";
 import { MenuNavigation } from "./MenuNavigation";
+import SplashScreen from "../screens/SplashScreen/SplashScreen";
+import { useTimer } from "../hooks/useTimer";
+import { useState } from "react";
 
 const { Navigator, Screen } = createNativeStackNavigator<RootStackParamList>();
 
 export const RootNavigation = () => {
+  const [isStart, setIsStart] = useState<boolean>(true);
+  const { time } = useTimer({
+    isStart: isStart,
+    setIsFinish: () => {
+      setIsStart(false);
+    },
+    duration: 10,
+  });
   return (
     <Navigator
-      initialRouteName="StartScreen"
+      initialRouteName={time < 1 ? "MenuScreen" : "SplashScreen"}
       screenOptions={{ headerShown: false }}
     >
-      <Screen name="StartScreen" component={StartScreen} />
-      <Screen name="MenuScreen" component={MenuNavigation} />
+      {isStart ? (
+        <Screen name="SplashScreen" component={SplashScreen} />
+      ) : (
+        <>
+          <Screen name="StartScreen" component={StartScreen} />
+          <Screen name="MenuScreen" component={MenuNavigation} />
+        </>
+      )}
     </Navigator>
   );
 };

@@ -1,17 +1,44 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import Svg, { Path, G, Defs, LinearGradient, Stop } from "react-native-svg";
 import { useNavigation } from "@react-navigation/native";
 import { RootStackScreenProps } from "../../navigation/RootNavigation.types";
+import Sound from "react-native-sound";
+import { useAppSelector } from "../../store/hooks";
+import {
+  selectIsOnBoarding,
+  selectSoundVolume,
+} from "../../store/features/setting";
+import { MenuStackScreenProps } from "../../navigation/MenuNavigation.types";
 
 const SvgButtonStart = () => {
-  const navigation = useNavigation<RootStackScreenProps["navigation"]>();
+  const navigation = useNavigation<
+    RootStackScreenProps["navigation"] & MenuStackScreenProps["navigation"]
+  >();
+  const backgroundSound = new Sound(
+    require("../../assets/audio/background.mp3")
+  );
+  const isOnBoarding = useAppSelector(selectIsOnBoarding);
+  console.log("🚀 ~ SvgButtonStart ~ isOnBoarding:", isOnBoarding);
+
+  const soundVolume = useAppSelector(selectSoundVolume);
+  useEffect(() => {
+    backgroundSound.setVolume(0.2);
+    console.log(backgroundSound.getVolume());
+
+    return () => {};
+  }, [soundVolume]);
 
   return (
     <TouchableOpacity
       style={styles.btn}
       onPress={() => {
-        navigation.navigate("MenuScreen");
+        backgroundSound.setNumberOfLoops(1000);
+        backgroundSound.play();
+
+        !isOnBoarding
+          ? navigation.navigate("MenuScreen", { screen: "PrivacyScreen" })
+          : navigation.navigate("MenuScreen");
       }}
     >
       <Svg width={360} height={77}>

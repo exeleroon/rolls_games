@@ -4,15 +4,22 @@ import React from "react";
 import Svg, { Path, G, Defs, LinearGradient, Stop } from "react-native-svg";
 import { useNavigation } from "@react-navigation/native";
 import { RootStackScreenProps } from "../../navigation/RootNavigation.types";
+import { useAppDispatch } from "../../store/hooks";
+import { toggleOnBoarding } from "../../store/features/setting";
+import { MenuStackScreenProps } from "../../navigation/MenuNavigation.types";
 
 const SvgButtonAccept = () => {
-  const navigation = useNavigation<RootStackScreenProps["navigation"]>();
+  const navigation = useNavigation<
+    RootStackScreenProps["navigation"] & MenuStackScreenProps["navigation"]
+  >();
+  const dispatch = useAppDispatch();
 
   return (
     <TouchableOpacity
       style={styles.btn}
       onPress={() => {
-        navigation.navigate("MenuScreen");
+        navigation.navigate("Menu");
+        dispatch(toggleOnBoarding());
       }}
     >
       <Svg width={360} height={77}>
